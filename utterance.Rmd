@@ -1,0 +1,117 @@
+---
+title: "Utterance Length"
+date: "5/7/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+library(plotly)
+library(ggthemes)
+library(gt)
+
+data <- read_csv("cstatsdf_novels.csv") 
+```
+
+# Novels and Utterance Length
+
+```{r}
+  data %>% 
+  arrange(uttlength.avg)  %>% 
+  ggplot(aes(uttlength.avg, fct_reorder(title, date),
+             text = paste("Title:", title, "\n",
+                              "Author:", lastname))) +
+  geom_col() +
+    theme_classic()  +
+    labs(title = "Novels and Utterance Length",
+         subtitle = "From Oldest to Newest Novel",
+         y = "Title",
+         x = "Utterance Length") 
+```
+
+# Novels by Edition
+
+```{r}
+gt(
+ data %>%
+  select(title, lastname, broadview, norton, oxford, penguin, date) %>% 
+  filter(broadview == TRUE &
+           norton == TRUE &
+           oxford == TRUE &
+           penguin == TRUE) %>% 
+  arrange(date) %>% 
+  select(title, lastname)) %>% 
+  tab_header(title = "All 4 Editions",
+             subtitle = "15 of 32 Titles") %>% 
+  cols_label(title = "Title",
+              lastname = "Author")
+```
+<br>
+```{r}
+gt(
+ data %>% 
+  select(title, lastname, broadview, norton, oxford, penguin, date) %>% 
+  filter(norton == TRUE &
+           oxford == TRUE &
+           penguin == TRUE &
+         broadview == FALSE) %>% 
+   arrange(date) %>% 
+   select(title, lastname)) %>% 
+ tab_header(title = "No Broadview Edition") %>% 
+  cols_label(title = "Title",
+              lastname = "Author")
+```
+<br>
+```{r}
+gt(
+      data %>% 
+  select(title, lastname, broadview, norton, oxford, penguin, date) %>% 
+   rowwise() %>% 
+   mutate(count = sum(broadview, norton, oxford, penguin)) %>% 
+   filter(count >= 2) %>% 
+   arrange(count)) %>% 
+  tab_header(title = "At Least Two Editions",
+            subtitle = "31 of 32 Titles") %>% 
+  cols_label(title = "Title",
+              lastname = "Author",
+              count = "Ed. Count")
+```
+<br>
+```{r}
+gt(
+  data %>% 
+  select(title, lastname, broadview, norton, oxford, penguin) %>% 
+   rowwise() %>% 
+   mutate(count = sum(broadview, norton, oxford, penguin)) %>% 
+   filter(count >= 1) %>% 
+   arrange(count)) %>% 
+  tab_header(title = "At Least One Edition",
+             subtitle = "32 of 32 Titles") %>% 
+cols_label(title = "Title",
+              lastname = "Author",
+              count = "Ed. Count")
+```
+ 
+# Average Utterance and Sex
+ 
+```{r}
+data %>% 
+  filter(lastname %in% c("Austen", "Dickens")) %>% 
+  mutate(difference = uttlength.avg.male - uttlength.avg.female)  %>% 
+  ggplot(aes(difference, fct_reorder(title, desc(lastname)), fill = lastname)) +
+  geom_col() +
+  labs(title = "Difference in Average Utterance Length of 
+Male and Female Characters",
+         subtitle = "Positive means more male utterance; Ranked by percent difference", 
+       x = "Difference (Male - Female)", 
+       y = "Title", 
+fill = "Author") +
+  scale_y_discrete(limits = c("Little Dorrit", "David Copperfield", "Oliver Twist", "Our Mutual Friend",
+                   "Dombey and Son", "Great Expectations", "Hard Times",
+                  "Bleak House", "Emma", "Pride And Prejudice",
+                   "Persuasion", "Mansfield Park", "Northanger Abbey",
+                   "Sense and Sensibility"))  +
+  theme_bw()
+```
+
