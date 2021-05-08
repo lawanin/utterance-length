@@ -15,13 +15,21 @@ data <- read_csv("cstatsdf_novels.csv")
 ```
 
 # Novels and Utterance Length
-
 ```{r}
   data %>% 
   arrange(uttlength.avg)  %>% 
-  ggplot(aes(uttlength.avg, fct_reorder(title, date),
-             text = paste("Title:", title, "\n",
-                              "Author:", lastname))) +
+  ggplot(aes(uttlength.avg, fct_reorder(title, uttlength.avg))) +
+  geom_col() +
+    theme_classic()  +
+    labs(title = "Novels and Utterance Length",
+         y = "Title",
+         x = "Utterance Length") 
+```
+
+```{r}
+ data %>% 
+  arrange(uttlength.avg)  %>% 
+  ggplot(aes(uttlength.avg, fct_reorder(title, date))) +
   geom_col() +
     theme_classic()  +
     labs(title = "Novels and Utterance Length",
@@ -29,6 +37,7 @@ data <- read_csv("cstatsdf_novels.csv")
          y = "Title",
          x = "Utterance Length") 
 ```
+
 
 # Novels by Edition
 
